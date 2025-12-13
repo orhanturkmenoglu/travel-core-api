@@ -1,16 +1,28 @@
 import express from "express";
 import cors from "cors";
+import colors from "colors";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import connectionDB from "./config/db.js";
 
 const app = express();
 
+dotenv.config();
 app.use(express.json());
 app.use(cors());
 
+connectionDB();
 
 app.use("/test", async (req, res) => {
   return res.status(200).send("<h1>Hello Travel Core Api 🚀</h1>");
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port : 3000");
+const PORT = process.env.PORT || 3000;
+
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+app.listen(PORT, () => {
+  console.log(`"Server is running on port : ${PORT}`.bgGreen.bgWhite);
 });
