@@ -4,7 +4,7 @@ import colors from "colors";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import connectionDB from "./config/db.js";
-
+import authRoutes from "./routes/auth.route.js";
 const app = express();
 
 dotenv.config();
@@ -12,6 +12,8 @@ app.use(express.json());
 app.use(cors());
 
 connectionDB();
+
+app.use("/api/v1/auth", authRoutes);
 
 app.use("/test", async (req, res) => {
   return res.status(200).send("<h1>Hello Travel Core Api 🚀</h1>");
