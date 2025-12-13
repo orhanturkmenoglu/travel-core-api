@@ -45,11 +45,7 @@ export const registerUser = async (req, res) => {
     });
   } catch (err) {
     console.log("❌ registerUser Error:", err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    next(err);
   }
 };
 
@@ -92,9 +88,6 @@ export const loginUser = async (req, res, next) => {
     });
   } catch (err) {
     console.log("❌ loginUser Error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    next(err);
   }
 };
