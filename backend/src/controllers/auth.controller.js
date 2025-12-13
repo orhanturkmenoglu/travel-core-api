@@ -1,4 +1,10 @@
 import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+
+const generateHashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -26,11 +32,13 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    const hashedPassword = await generateHashPassword(password);
+
     // CREATE USER
     const newUser = await User.create({
       username,
       email,
-      password,
+      password: hashedPassword,
     });
 
     console.log("✅ User Created:", newUser._id);
@@ -76,8 +84,10 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // PASSWORD CHECK (şimdilik plain)
-    if (password !== user.password) {
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    // PASSWORD typeChecker
+    if (!isPasswordMatch) {
       console.log("❌ Wrong password");
       return res.status(401).json({
         success: false,
@@ -86,6 +96,7 @@ export const loginUser = async (req, res) => {
     }
 
     console.log("✅ Login successful:", user._id);
+    
     return res.status(200).json({
       success: true,
       message: "User login successfully",
