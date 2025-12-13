@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import connectionDB from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
+import errorHandler from "./middlewares/errorHandler.js";
+
+
 const app = express();
 
 dotenv.config();
@@ -24,6 +27,9 @@ const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`"Server is running on port : ${PORT}`.bgGreen.bgWhite);

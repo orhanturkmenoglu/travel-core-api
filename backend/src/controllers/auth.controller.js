@@ -1,5 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import ApiError from "../utils/ApiError.js";
+import httpStatus from "http-status";
 
 const generateHashPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
@@ -14,11 +16,7 @@ export const registerUser = async (req, res) => {
   try {
     // VALIDATION
     if (!username || !email || !password) {
-      console.log("⚠️ Missing fields");
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+      return next(new ApiError(400, "Please provide all required fields"));
     }
 
     // CHECK EXISTING USER
@@ -26,10 +24,7 @@ export const registerUser = async (req, res) => {
     console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
 
     if (existsUser) {
-      return res.status(409).json({
-        success: false,
-        message: "Email already exists",
-      });
+      return next(new ApiError(409, "Email already exists"));
     }
 
     const hashedPassword = await generateHashPassword(password);
@@ -58,7 +53,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   console.log("📥 Login Request:", req.body);
@@ -66,11 +61,7 @@ export const loginUser = async (req, res) => {
   try {
     // VALIDATION
     if (!email || !password) {
-      console.log("⚠️ Missing fields");
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+      return next(new ApiError(400, "Email and password are required"));
     }
 
     // FIND USER
@@ -78,25 +69,18 @@ export const loginUser = async (req, res) => {
     console.log("🔍 User:", user ? "FOUND" : "NOT FOUND");
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return next(new ApiError(404, "User not found"));
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     // PASSWORD typeChecker
     if (!isPasswordMatch) {
-      console.log("❌ Wrong password");
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
+      return next(new ApiError(401, "Invalid credentials"));
     }
 
     console.log("✅ Login successful:", user._id);
-    
+
     return res.status(200).json({
       success: true,
       message: "User login successfully",
