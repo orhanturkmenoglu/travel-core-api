@@ -2,13 +2,19 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
-
+import Jwt from "jsonwebtoken";
+import cookie from "cookie";
+const generateToken = (user) => {
+  return Jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: "8h",
+  });
+};
 const generateHashPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   console.log("📥 Register Request Body:", req.body);
@@ -77,15 +83,26 @@ export const loginUser = async (req, res, next) => {
 
     console.log("✅ Login successful:", user._id);
 
-    return res.status(200).json({
-      success: true,
-      message: "User login successfully",
-      data: {
-        id: user._id,
-        email: user.email,
-        username: user.username,
-      },
-    });
+    const token = generateToken(user);
+
+    return res
+      .status(200)
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // HTTPS
+        sameSite: "strict", // CSRF koruması
+        maxAge: 8 * 60 * 60 * 1000, // 8 saat
+      })
+      .json({
+        success: true,
+        message: "User login successfully",
+        data: {
+          id: user._id,
+          email: user.email,
+          username: user.username,
+        },
+        access_token: token,
+      });
   } catch (err) {
     console.log("❌ loginUser Error:", err);
     next(err);
