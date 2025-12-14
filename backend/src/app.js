@@ -6,13 +6,14 @@ import morgan from "morgan";
 import connectionDB from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
 import errorHandler from "./middlewares/errorHandler.js";
-
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 dotenv.config();
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 connectionDB();
 
