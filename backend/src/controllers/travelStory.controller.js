@@ -69,8 +69,15 @@ export const getAllTravelStories = async (req, res, next) => {
 export const deleteTravelStory = async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;
+
+  console.log("DELETE_TRAVEL_STORY_REQ", {
+    userId,
+    travelId,
+  });
+
   try {
     if (!travelId) {
+      console.error("TRAVEL_ID_MISSING");
       return next(
         new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
       );
@@ -81,17 +88,25 @@ export const deleteTravelStory = async (req, res, next) => {
       author: userId,
     });
 
+    console.log("FOUND_TRAVEL_STORY", existTravelStory?._id);
+
     if (!existTravelStory) {
-      return next(new ApiError(httpStatus.NOT_FOUND, "Travel story not found"));
+      console.warn("TRAVEL_STORY_NOT_FOUND", { travelId, userId });
+      return next(
+        new ApiError(httpStatus.NOT_FOUND, "Travel story not found")
+      );
     }
 
     await existTravelStory.deleteOne();
+
+    console.log("TRAVEL_STORY_DELETED", { travelId });
 
     return res.status(httpStatus.OK).json({
       success: true,
       message: "Travel story deleted successfully",
     });
   } catch (err) {
+    console.error("DELETE_TRAVEL_STORY_ERROR", err);
     next(err);
   }
 };
