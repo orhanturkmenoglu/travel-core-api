@@ -13,7 +13,7 @@ router.get("/", authValidation, getAllTravelStories);
 
 // delete travelStorie
 
-router.delete("/:id", deleteTravelStory);
+router.delete("/delete/:travelId", authValidation, deleteTravelStory);
 // update TravelStory
 
 // search travelStory query

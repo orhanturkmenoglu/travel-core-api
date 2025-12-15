@@ -92,16 +92,14 @@ export const deleteTravelStory = async (req, res, next) => {
 
     if (!existTravelStory) {
       console.warn("TRAVEL_STORY_NOT_FOUND", { travelId, userId });
-      return next(
-        new ApiError(httpStatus.NOT_FOUND, "Travel story not found")
-      );
+      return next(new ApiError(httpStatus.NOT_FOUND, "Travel story not found"));
     }
 
     await existTravelStory.deleteOne();
 
     console.log("TRAVEL_STORY_DELETED", { travelId });
 
-    return res.status(httpStatus.OK).json({
+    return res.status(httpStatus.NO_CONTENT).json({
       success: true,
       message: "Travel story deleted successfully",
     });
