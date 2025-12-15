@@ -15,12 +15,6 @@ export const createTravelStory = async (req, res, next) => {
       );
     }
 
-    // 🔹 User check
-    const existsUser = await User.findById(userId);
-    if (!existsUser) {
-      return next(new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized"));
-    }
-
     // 🔹 travelDate parse
     // Kabul edilen format: YYYY-MM-DD (ÖNERİLEN)
     const parsedTravelDate = new Date(travelDate);
@@ -45,6 +39,27 @@ export const createTravelStory = async (req, res, next) => {
       success: true,
       message: "Travel story created successfully",
       travelStory,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllTravelStories = async (req, res, next) => {
+  const userId = req.user.id;
+  try {
+    const travelStories = await TravelStory.find({
+      author: userId,
+      status: "PUBLISHED",
+    }).sort({
+      isFavorite: -1,
+      createdAt: -1,
+    });
+
+    return res.status(httpStatus.OK).json({
+      success: true,
+      message: "Travel stories fetched successfully",
+      travelStories,
     });
   } catch (err) {
     next(err);
