@@ -6,6 +6,7 @@ import morgan from "morgan";
 import connectionDB from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoute from "./routes/user.route.js";
+import travelStoryRoute from "./routes/travelStory.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
 
@@ -20,6 +21,7 @@ connectionDB();
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoute);
+app.use("/api/v1/travels", travelStoryRoute);
 
 app.use("/test", async (req, res) => {
   return res.status(200).send("<h1>Hello Travel Core Api 🚀</h1>");
