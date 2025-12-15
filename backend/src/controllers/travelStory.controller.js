@@ -65,3 +65,33 @@ export const getAllTravelStories = async (req, res, next) => {
     next(err);
   }
 };
+
+export const deleteTravelStory = async (req, res, next) => {
+  const userId = req.user.id;
+  const { travelId } = req.params;
+  try {
+    if (!travelId) {
+      return next(
+        new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
+      );
+    }
+
+    const existTravelStory = await TravelStory.findOne({
+      _id: travelId,
+      author: userId,
+    });
+
+    if (!existTravelStory) {
+      return next(new ApiError(httpStatus.NOT_FOUND, "Travel story not found"));
+    }
+
+    await existTravelStory.deleteOne();
+
+    return res.status(httpStatus.OK).json({
+      success: true,
+      message: "Travel story deleted successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
