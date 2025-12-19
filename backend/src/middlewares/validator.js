@@ -1,3 +1,5 @@
+import ApiError from "../utils/ApiError.js";
+
 export const validator = (schema) => {
   return (req, res, next) => {
     const { value, error } = schema.validate(req.body, { abortEarly: false });
