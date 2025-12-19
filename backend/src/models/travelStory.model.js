@@ -31,9 +31,9 @@ const travelStorySchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    ImageUrl: {
+    imageUrl: {
       type: String,
-      required: true,
+      required:true,
     },
     tags: {
       type: [String],

@@ -1,11 +1,11 @@
-import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
 import TravelStory from "./../models/travelStory.model.js";
+import cloudinary from "../config/cloudinary.config.js";
 
 export const createTravelStory = async (req, res, next) => {
   const userId = req.user.id;
-  const { title, story, location, travelDate, ImageUrl, tags } = req.body;
+  const { title, story, location, travelDate, imageUrl, tags } = req.body;
 
   try {
     // 🔹 travelDate parse
@@ -18,12 +18,19 @@ export const createTravelStory = async (req, res, next) => {
       );
     }
 
+    // İMAGE UPLOAD CLOUDINARY
+    const uploadImage = await cloudinary.uploader.upload(imageUrl, {
+      folder: "travel_stories",
+      resource_type: "image",
+    });
+    console.log("Upload Respone : ", uploadImage);
+
     const travelStory = await TravelStory.create({
       title,
       story,
       location,
       travelDate: parsedTravelDate,
-      ImageUrl,
+      imageUrl : uploadImage.secure_url,
       tags,
       author: userId,
     });
