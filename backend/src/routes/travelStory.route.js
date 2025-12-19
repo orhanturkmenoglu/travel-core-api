@@ -6,6 +6,7 @@ import {
   archiveTravelStory,
   getUserTravelStoriesByStatus,
 } from "../controllers/travelStory.controller.js";
+import { authorizeRole } from "../middlewares/authorizeRole.js";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.patch("/:travelId/archive", authValidation, archiveTravelStory);
 
 // delete travelStorie
 
-router.delete("/delete/:travelId", authValidation, deleteTravelStory);
+router.delete("/delete/:travelId",authorizeRole("ADMIN"), authValidation, deleteTravelStory);
 // update TravelStory
 
 // search travelStory query
