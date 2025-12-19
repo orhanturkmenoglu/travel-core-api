@@ -20,11 +20,6 @@ export const registerUser = async (req, res, next) => {
   console.log("📥 Register Request Body:", req.body);
 
   try {
-    // VALIDATION
-    if (!username || !email || !password) {
-      return next(new ApiError(400, "Please provide all required fields"));
-    }
-
     // CHECK EXISTING USER
     const existsUser = await User.findOne({ email });
     console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
@@ -47,7 +42,14 @@ export const registerUser = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: newUser,
+      data: {
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        _id: newUser._id,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      },
     });
   } catch (err) {
     console.log("❌ registerUser Error:", err);
@@ -61,11 +63,7 @@ export const loginUser = async (req, res, next) => {
   console.log("📥 Login Request:", req.body);
 
   try {
-    // VALIDATION
-    if (!email || !password) {
-      return next(new ApiError(400, "Email and password are required"));
-    }
-
+  
     // FIND USER
     const user = await User.findOne({ email });
     console.log("🔍 User:", user ? "FOUND" : "NOT FOUND");
