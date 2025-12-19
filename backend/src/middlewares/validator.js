@@ -1,6 +1,6 @@
 import ApiError from "../utils/ApiError.js";
 
-export const validator = (schema) => {
+const validator = (schema) => {
   return (req, res, next) => {
     const { value, error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
@@ -13,3 +13,5 @@ export const validator = (schema) => {
     next();
   };
 };
+
+export default validator;

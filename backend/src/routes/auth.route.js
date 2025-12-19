@@ -4,7 +4,7 @@ import {
   createUserSchema,
   loginUserSchema,
 } from "../validations/user.validation.js";
-import { validator } from "./../middlewares/validator.js";
+import validator from "./../middlewares/validator.js";
 
 const router = express.Router();
 
