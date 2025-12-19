@@ -39,7 +39,7 @@ export const registerUser = async (req, res, next) => {
 
     console.log("✅ User Created:", newUser._id);
 
-    return res.status(201).json({
+    return res.status(httpStatus.CREATED).json({
       success: true,
       message: "User registered successfully",
       data: {
@@ -84,7 +84,7 @@ export const loginUser = async (req, res, next) => {
     const token = generateToken(user);
 
     return res
-      .status(200)
+      .status(httpStatus.OK)
       .cookie("access_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // HTTPS
