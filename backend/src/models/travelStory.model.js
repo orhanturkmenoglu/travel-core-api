@@ -46,7 +46,7 @@ const travelStorySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["DRAFT", "PUBLISHED"],
+      enum: ["DRAFT", "PUBLISHED", "ARCHIVED"],
       default: "DRAFT",
     },
     isFavorite: {
@@ -61,7 +61,9 @@ const travelStorySchema = new mongoose.Schema(
 // 🔥 CREATE öncesi otomatik PUBLISHED
 
 travelStorySchema.pre("save", function () {
-  this.status = "PUBLISHED";
+  if (this.isNew) { // sadece create yapıldığıdna çalışır update veya patch zamanı çalışmaz.
+    this.status = "PUBLISHED";
+  }
 });
 
 const TravelStory = mongoose.model("TravelStory", travelStorySchema);
