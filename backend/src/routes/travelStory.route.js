@@ -4,12 +4,15 @@ import {
   createTravelStory,
   getAllTravelStories,
   deleteTravelStory,
+  archiveTravelStory,
 } from "../controllers/travelStory.controller.js";
 
 const router = express.Router();
 
 router.post("/", authValidation, createTravelStory);
 router.get("/", authValidation, getAllTravelStories);
+
+router.patch("/:travelId/archive", authValidation, archiveTravelStory);
 
 // delete travelStorie
 

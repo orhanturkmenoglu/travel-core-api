@@ -66,6 +66,47 @@ export const getAllTravelStories = async (req, res, next) => {
   }
 };
 
+export const archiveTravelStory = async (req, res, next) => {
+  const userId = req.user.id;
+  const { travelId } = req.params;
+  try {
+    if (!travelId) {
+      return next(
+        new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
+      );
+    }
+
+    const travelStory = await TravelStory.findOne({
+      author: userId,
+      _id: travelId,
+    });
+
+    if (!travelStory) {
+      return next(new ApiError(httpStatus.NOT_FOUND, "TRAVEL STORY NOT FOUND"));
+    }
+
+    if (travelStory.status === "ARCHIVED") {
+      return next(
+        new ApiError(httpStatus.CONFLICT, "Travel story is already archived")
+      );
+    }
+
+    travelStory.status = "ARCHIVED";
+    await travelStory.save();
+
+    return res.status(httpStatus.OK).json({
+      success: true,
+      message: "Travel story archived successfully",
+      data: {
+        id: travelStory._id,
+        status: travelStory.status,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteTravelStory = async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;
