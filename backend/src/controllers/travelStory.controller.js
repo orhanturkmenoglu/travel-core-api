@@ -8,13 +8,6 @@ export const createTravelStory = async (req, res, next) => {
   const { title, story, location, travelDate, ImageUrl, tags } = req.body;
 
   try {
-    // 🔹 Validation
-    if (!title || !story || !location || !travelDate || !ImageUrl || !tags) {
-      return next(
-        new ApiError(httpStatus.BAD_REQUEST, "All fields are required")
-      );
-    }
-
     // 🔹 travelDate parse
     // Kabul edilen format: YYYY-MM-DD (ÖNERİLEN)
     const parsedTravelDate = new Date(travelDate);
