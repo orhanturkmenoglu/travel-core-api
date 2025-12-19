@@ -2,15 +2,16 @@ import express from "express";
 import authValidation from "../middlewares/auth.js";
 import {
   createTravelStory,
-  getAllTravelStories,
   deleteTravelStory,
   archiveTravelStory,
+  getUserTravelStoriesByStatus,
 } from "../controllers/travelStory.controller.js";
 
 const router = express.Router();
 
 router.post("/", authValidation, createTravelStory);
-router.get("/", authValidation, getAllTravelStories);
+
+router.get("/",authValidation,getUserTravelStoriesByStatus);
 
 router.patch("/:travelId/archive", authValidation, archiveTravelStory);
 

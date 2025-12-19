@@ -45,20 +45,23 @@ export const createTravelStory = async (req, res, next) => {
   }
 };
 
-export const getAllTravelStories = async (req, res, next) => {
+export const getUserTravelStoriesByStatus = async (req, res, next) => {
   const userId = req.user.id;
-  try {
-    const travelStories = await TravelStory.find({
-      author: userId,
-      status: "PUBLISHED",
-    }).sort({
-      isFavorite: -1,
-      createdAt: -1,
-    });
+  const { status } = req.query;
 
+  try {
+    const query = { author: userId };
+
+    // Eğer status verilmemişse default PUBLISHED
+
+    query.status = status ? status.toUpperCase() : "PUBLISHED";
+
+    const travelStories = await TravelStory.find(query).sort({ createdAt: -1 });
     return res.status(httpStatus.OK).json({
       success: true,
-      message: "Travel stories fetched successfully",
+      message: `Travel stories retrieved successfully${
+        status ? ` with status ${status}` : ""
+      }`,
       travelStories,
     });
   } catch (err) {
