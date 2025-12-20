@@ -53,6 +53,13 @@ const travelStorySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    rating:{
+      type:Number,
+      minLength:1,
+      maxLength:5,
+      default:3
+    }
   },
   { timestamps: true }
 );

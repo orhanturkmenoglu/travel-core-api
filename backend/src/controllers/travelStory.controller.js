@@ -5,7 +5,8 @@ import { uploadTravelStoryImage } from "../utils/cloudinary.js";
 
 export const createTravelStory = async (req, res, next) => {
   const userId = req.user.id;
-  const { title, story, location, travelDate, imageUrl, tags } = req.body;
+  const { title, story, location, travelDate, imageUrl, tags, rating } =
+    req.body;
 
   try {
     // 🔹 travelDate parse
@@ -27,9 +28,10 @@ export const createTravelStory = async (req, res, next) => {
       story,
       location,
       travelDate: parsedTravelDate,
-      imageUrl : uploadImage,
+      imageUrl: uploadImage,
       tags,
       author: userId,
+      rating,
     });
 
     return res.status(httpStatus.CREATED).json({
@@ -42,24 +44,47 @@ export const createTravelStory = async (req, res, next) => {
   }
 };
 
-export const getUserTravelStoriesByStatus = async (req, res, next) => {
+export const getTravelStories = async (req, res, next) => {
   const userId = req.user.id;
-  const { status } = req.query;
-
+  const { status, minRating, maxRating } = req.query;
   try {
     const query = { author: userId };
 
-    // Eğer status verilmemişse default PUBLISHED
-
     query.status = status ? status.toUpperCase() : "PUBLISHED";
 
+    // RATING FILTER
+    if (minRating || maxRating) {
+      if (!minRating || !maxRating) {
+        return next(
+          new ApiError(
+            httpStatus.BAD_REQUEST,
+            "minRating and maxRating are required"
+          )
+        );
+      }
+
+      const min = Number(minRating);
+      const max = Number(maxRating);
+      
+      if (Number.isNaN(min) || Number.isNaN(max)) {
+        return next(
+          new ApiError(
+            httpStatus.BAD_REQUEST,
+            "minRating and maxRating must be valid numbers"
+          )
+        );
+      }
+      query.rating = { $gte: min, $lte: max };
+    }
+
     const travelStories = await TravelStory.find(query).sort({ createdAt: -1 });
+
     return res.status(httpStatus.OK).json({
       success: true,
       message: `Travel stories retrieved successfully${
         status ? ` with status ${status}` : ""
       }`,
-      travelStories,
+      data: travelStories,
     });
   } catch (err) {
     next(err);

@@ -30,4 +30,10 @@ export const createPostSchema = Joi.object({
     "string.min": "Each tag must be at least 2 characters",
     "string.max": "Each tag can be at most 20 characters",
   }),
+
+  rating:Joi.number().min(1).max(5).default(1).optional().messages({
+    "number.base":"Rating must be a number",
+    "number.min":"Rating must be at least 1",
+    "number.max":"Rating can be at most 5",
+  })
 });
