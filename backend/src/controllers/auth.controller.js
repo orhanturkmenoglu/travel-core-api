@@ -63,7 +63,6 @@ export const loginUser = async (req, res, next) => {
   console.log("📥 Login Request:", req.body);
 
   try {
-  
     // FIND USER
     const user = await User.findOne({ email });
     console.log("🔍 User:", user ? "FOUND" : "NOT FOUND");
@@ -103,6 +102,24 @@ export const loginUser = async (req, res, next) => {
       });
   } catch (err) {
     console.log("❌ loginUser Error:", err);
+    next(err);
+  }
+};
+
+export const logoutUser = async (req, res, next) => {
+  try {
+    res
+      .clearCookie("access_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "dev", // HTTPS
+        sameSite: "strict", // CSRF koruması
+      })
+      .status(httpStatus.OK)
+      .json({
+        success: true,
+        message: "User logged out successfully",
+      });
+  } catch (err) {
     next(err);
   }
 };
