@@ -196,15 +196,3 @@ export const deleteTravelStory = async (req, res, next) => {
   }
 };
 
-backendden üç yerdne veri gelir body,params,query,
-params /travel/:travelId 
-query /travel?status=published&minRating=3&maxRating=5&pagination=10
-body ise post,put patch isteklerinde gelir
-
-altın kurall : params : iidentitly kimlik işlemlerinde kullanılır
-query: filtreleme sıralama pagination sort gibi işlemlerde kullanılır
-body : veri oluşturma güncelleme işlemlerinde kullanılır
-
-// query akış şaması 
-client - query params - controller - filter object - mongoose query , pagination - sort -response 
-
