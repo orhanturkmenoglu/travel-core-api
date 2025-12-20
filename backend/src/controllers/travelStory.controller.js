@@ -1,7 +1,7 @@
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
 import TravelStory from "./../models/travelStory.model.js";
-import cloudinary from "../config/cloudinary.config.js";
+import { uploadTravelStoryImage } from "../utils/cloudinary.js";
 
 export const createTravelStory = async (req, res, next) => {
   const userId = req.user.id;
@@ -19,10 +19,7 @@ export const createTravelStory = async (req, res, next) => {
     }
 
     // İMAGE UPLOAD CLOUDINARY
-    const uploadImage = await cloudinary.uploader.upload(imageUrl, {
-      folder: "travel_stories",
-      resource_type: "image",
-    });
+    const uploadImage = await uploadTravelStoryImage(imageUrl);
     console.log("Upload Respone : ", uploadImage);
 
     const travelStory = await TravelStory.create({
@@ -30,7 +27,7 @@ export const createTravelStory = async (req, res, next) => {
       story,
       location,
       travelDate: parsedTravelDate,
-      imageUrl : uploadImage.secure_url,
+      imageUrl : uploadImage,
       tags,
       author: userId,
     });
