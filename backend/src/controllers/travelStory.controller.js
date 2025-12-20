@@ -1,5 +1,5 @@
 import ApiError from "../utils/ApiError.js";
-import httpStatus from "http-status";
+import httpStatus, { status } from "http-status";
 import TravelStory from "./../models/travelStory.model.js";
 import { uploadTravelStoryImage } from "../utils/cloudinary.js";
 
@@ -46,12 +46,14 @@ export const createTravelStory = async (req, res, next) => {
 
 export const getTravelStories = async (req, res, next) => {
   const userId = req.user.id;
-  const { status, minRating, maxRating } = req.query;
+  const { status, minRating, maxRating, page=1,limit=10 } = req.query;
   try {
-    const query = { author: userId };
+    const query = { 
+      author: userId,
+      status:status ? status.toUpperCase() : "PUBLISHED",
+     };
 
-    query.status = status ? status.toUpperCase() : "PUBLISHED";
-
+     
     // RATING FILTER
     if (minRating || maxRating) {
       if (!minRating || !maxRating) {
@@ -77,13 +79,32 @@ export const getTravelStories = async (req, res, next) => {
       query.rating = { $gte: min, $lte: max };
     }
 
-    const travelStories = await TravelStory.find(query).sort({ createdAt: -1 });
+    // PAGINATION 
+
+    const pageNumber = Math.max(Number(page), 1);
+    const limitNumber = Math.max(Number(limit), 50);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const [travelStories,totalCount] = await Promise.all([
+      TravelStory.find(query)
+      .sort({createdAt:-1})
+      .skip(skip)
+      .limit(limitNumber)
+      .lean(),
+      TravelStory.countDocuments(query)
+    ]);
 
     return res.status(httpStatus.OK).json({
       success: true,
       message: `Travel stories retrieved successfully${
         status ? ` with status ${status}` : ""
       }`,
+      pagination:{
+        page:pageNumber,
+        limit:limitNumber,
+        totalPages: Math.ceil(totalCount/limitNumber),
+        totalCount
+      },
       data: travelStories,
     });
   } catch (err) {
@@ -174,3 +195,16 @@ export const deleteTravelStory = async (req, res, next) => {
     next(err);
   }
 };
+
+backendden üç yerdne veri gelir body,params,query,
+params /travel/:travelId 
+query /travel?status=published&minRating=3&maxRating=5&pagination=10
+body ise post,put patch isteklerinde gelir
+
+altın kurall : params : iidentitly kimlik işlemlerinde kullanılır
+query: filtreleme sıralama pagination sort gibi işlemlerde kullanılır
+body : veri oluşturma güncelleme işlemlerinde kullanılır
+
+// query akış şaması 
+client - query params - controller - filter object - mongoose query , pagination - sort -response 
+
