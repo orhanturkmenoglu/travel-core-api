@@ -112,6 +112,40 @@ export const getTravelStories = async (req, res, next) => {
   }
 };
 
+export const getTravelStoriesBySearchTitle = async (req,res,next)=>{
+  const {title} = req.query;
+  try{
+    // amaç gelen başlık parametresine göre seyahat hikayelerini aramak geriye eşleşenleri döndürmek
+
+    if(!title){
+      return next(new ApiError(httpStatus.BAD_REQUEST,"Title query param is required"));
+    }
+
+     // Regex güvenliği
+    const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    let filter = {
+      title :{ $regex: escapedTitle, $options: "i" }, // i : case insensitive,
+      status:"PUBLISHED"
+    }
+
+    const travelStories = await TravelStory.find(filter).sort({createdAt:-1}).lean();
+
+    if(!travelStories.length){
+      travelStories = await TravelStory.find({status:"PUBLISHED"}).sort({createdAt:-1}).lean();
+    }
+
+    return res.status(httpStatus.OK).json({
+      success:true,
+      message:`Travel stories matching title "${title}" retrieved successfully`,
+      data:travelStories
+    });
+
+  }catch(err){
+    next(err);
+  }
+}
+
 export const archiveTravelStory = async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;

@@ -5,26 +5,41 @@ import {
   deleteTravelStory,
   archiveTravelStory,
   getUserTravelStoriesByStatus,
+  getTravelStoriesBySearchTitle
 } from "../controllers/travelStory.controller.js";
 import { authorizeRole } from "../middlewares/authorizeRole.js";
 import { createPostSchema } from "../validations/travelStory.validation.js";
-import  validator  from './../middlewares/validator.js';
+import validator from "../middlewares/validator.js";
 
 const router = express.Router();
 
-router.post("/",validator(createPostSchema),authValidation, createTravelStory);
+// Create travel story
+router.post(
+  "/",
+  authValidation,
+  validator(createPostSchema),
+  createTravelStory
+);
 
-router.get("/",authValidation,getUserTravelStoriesByStatus);
+// Search travel stories by title (public)
+router.get("/search", getTravelStoriesBySearchTitle);
 
-router.patch("/:travelId/archive", authValidation, archiveTravelStory);
+// Get user's travel stories by status
+router.get("/", authValidation, getUserTravelStoriesByStatus);
 
-// delete travelStorie
+// Archive travel story
+router.patch(
+  "/:travelId/archive",
+  authValidation,
+  archiveTravelStory
+);
 
-router.delete("/delete/:travelId",authorizeRole("ADMIN"), authValidation, deleteTravelStory);
-// update TravelStory
-
-// search travelStory query
-
-// favorite travelStorie
+// Delete travel story (ADMIN only)
+router.delete(
+  "/:travelId",
+  authValidation,
+  authorizeRole("ADMIN"),
+  deleteTravelStory
+);
 
 export default router;
