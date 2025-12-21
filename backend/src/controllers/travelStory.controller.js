@@ -3,6 +3,7 @@ import httpStatus, { status } from "http-status";
 import TravelStory from "./../models/travelStory.model.js";
 import { uploadTravelStoryImage } from "../utils/cloudinary.js";
 import { text } from "express";
+import User from "../models/user.model.js";
 
 export const createTravelStory = async (req, res, next) => {
   const userId = req.user.id;
