@@ -2,6 +2,7 @@ import ApiError from "../utils/ApiError.js";
 import httpStatus, { status } from "http-status";
 import TravelStory from "./../models/travelStory.model.js";
 import { uploadTravelStoryImage } from "../utils/cloudinary.js";
+import { text } from "express";
 
 export const createTravelStory = async (req, res, next) => {
   const userId = req.user.id;
@@ -46,14 +47,13 @@ export const createTravelStory = async (req, res, next) => {
 
 export const getTravelStories = async (req, res, next) => {
   const userId = req.user.id;
-  const { status, minRating, maxRating, page=1,limit=10 } = req.query;
+  const { status, minRating, maxRating, page = 1, limit = 10 } = req.query;
   try {
-    const query = { 
+    const query = {
       author: userId,
-      status:status ? status.toUpperCase() : "PUBLISHED",
-     };
+      status: status ? status.toUpperCase() : "PUBLISHED",
+    };
 
-     
     // RATING FILTER
     if (minRating || maxRating) {
       if (!minRating || !maxRating) {
@@ -67,7 +67,7 @@ export const getTravelStories = async (req, res, next) => {
 
       const min = Number(minRating);
       const max = Number(maxRating);
-      
+
       if (Number.isNaN(min) || Number.isNaN(max)) {
         return next(
           new ApiError(
@@ -79,19 +79,19 @@ export const getTravelStories = async (req, res, next) => {
       query.rating = { $gte: min, $lte: max };
     }
 
-    // PAGINATION 
+    // PAGINATION
 
     const pageNumber = Math.max(Number(page), 1);
     const limitNumber = Math.max(Number(limit), 50);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const [travelStories,totalCount] = await Promise.all([
+    const [travelStories, totalCount] = await Promise.all([
       TravelStory.find(query)
-      .sort({createdAt:-1})
-      .skip(skip)
-      .limit(limitNumber)
-      .lean(),
-      TravelStory.countDocuments(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNumber)
+        .lean(),
+      TravelStory.countDocuments(query),
     ]);
 
     return res.status(httpStatus.OK).json({
@@ -99,11 +99,11 @@ export const getTravelStories = async (req, res, next) => {
       message: `Travel stories retrieved successfully${
         status ? ` with status ${status}` : ""
       }`,
-      pagination:{
-        page:pageNumber,
-        limit:limitNumber,
-        totalPages: Math.ceil(totalCount/limitNumber),
-        totalCount
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages: Math.ceil(totalCount / limitNumber),
+        totalCount,
       },
       data: travelStories,
     });
@@ -112,39 +112,43 @@ export const getTravelStories = async (req, res, next) => {
   }
 };
 
-export const getTravelStoriesBySearchTitle = async (req,res,next)=>{
-  const {title} = req.query;
-  try{
+export const getTravelStoriesBySearchTitle = async (req, res, next) => {
+  const { title } = req.query;
+  try {
     // amaç gelen başlık parametresine göre seyahat hikayelerini aramak geriye eşleşenleri döndürmek
 
-    if(!title){
-      return next(new ApiError(httpStatus.BAD_REQUEST,"Title query param is required"));
+    if (!title) {
+      return next(
+        new ApiError(httpStatus.BAD_REQUEST, "Title query param is required")
+      );
     }
 
-     // Regex güvenliği
-    const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const filter = {
+      $text: { $search: title },
+      status: "PUBLISHED",
+    };
 
-    let filter = {
-      title :{ $regex: escapedTitle, $options: "i" }, // i : case insensitive,
-      status:"PUBLISHED"
-    }
+    let travelStories = await TravelStory.find(filter, {
+      score: { $meta: "textScore" },
+    })
+      .sort({ score: { $meta: "textScore" } })
+      .lean();
 
-    const travelStories = await TravelStory.find(filter).sort({createdAt:-1}).lean();
-
-    if(!travelStories.length){
-      travelStories = await TravelStory.find({status:"PUBLISHED"}).sort({createdAt:-1}).lean();
+    if (!travelStories.length) {
+      travelStories = await TravelStory.find({ status: "PUBLISHED" })
+        .sort({ createdAt: -1 })
+        .lean();
     }
 
     return res.status(httpStatus.OK).json({
-      success:true,
-      message:`Travel stories matching title "${title}" retrieved successfully`,
-      data:travelStories
+      success: true,
+      message: `Travel stories matching title "${title}" retrieved successfully`,
+      data: travelStories,
     });
-
-  }catch(err){
+  } catch (err) {
     next(err);
   }
-}
+};
 
 export const archiveTravelStory = async (req, res, next) => {
   const userId = req.user.id;
@@ -229,4 +233,3 @@ export const deleteTravelStory = async (req, res, next) => {
     next(err);
   }
 };
-

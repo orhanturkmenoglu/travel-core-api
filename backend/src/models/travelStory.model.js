@@ -73,6 +73,9 @@ travelStorySchema.pre("save", function () {
   }
 });
 
+// Text index for full-text search
+travelStorySchema.index({ title: "text" ,story:"text", location:"text", tags:"text"});
+
 const TravelStory = mongoose.model("TravelStory", travelStorySchema);
 
 export default TravelStory;
