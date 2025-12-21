@@ -4,8 +4,9 @@ import {
   createTravelStory,
   deleteTravelStory,
   archiveTravelStory,
-  getUserTravelStoriesByStatus,
-  getTravelStoriesBySearchTitle
+  getTravelStoriesBySearchTitle,
+  getTravelStories,
+  getUserFavoriteTravelStories,
 } from "../controllers/travelStory.controller.js";
 import { authorizeRole } from "../middlewares/authorizeRole.js";
 import { createPostSchema } from "../validations/travelStory.validation.js";
@@ -24,15 +25,13 @@ router.post(
 // Search travel stories by title (public)
 router.get("/search", getTravelStoriesBySearchTitle);
 
+router.get("/favorites", authValidation, getUserFavoriteTravelStories);
+
 // Get user's travel stories by status
-router.get("/", authValidation, getUserTravelStoriesByStatus);
+router.get("/", authValidation, getTravelStories);
 
 // Archive travel story
-router.patch(
-  "/:travelId/archive",
-  authValidation,
-  archiveTravelStory
-);
+router.patch("/:travelId/archive", authValidation, archiveTravelStory);
 
 // Delete travel story (ADMIN only)
 router.delete(

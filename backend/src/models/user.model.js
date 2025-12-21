@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema(
       enum: ["ADMIN", "USER"],
       default: "USER",
     },
+
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "TravelStory" }],
   },
   { timestamps: true }
 );

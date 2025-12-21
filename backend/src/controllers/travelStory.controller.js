@@ -233,3 +233,60 @@ export const deleteTravelStory = async (req, res, next) => {
     next(err);
   }
 };
+
+// favorilere ekleme çıkarma işlemi
+
+// kullanıcı story id sini gönderir favorilere eklenir veya çıkarılır daha önce eklenmişsse tekrar eklenmez çıkarılır
+// bizim elimizde boolean isFavorite var ona göre işlem yaparız
+
+export const getUserFavoriteTravelStories = async (req, res, next) => {
+  const userId = req.user.id;
+  const { travelId } = req.params;
+
+  try {
+    if (!travelId) {
+      return next(
+        new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
+      );
+    }
+
+    const existTravelStory = await TravelStory.findOne({
+      _id: travelId,
+    });
+
+    if (!existTravelStory) {
+      return next(new ApiError(httpStatus.NOT_FOUND, "Travel story not found"));
+    }
+
+  
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ApiError(httpStatus.NOT_FOUND, "User not found"));
+    }
+
+    const isFavorite  = user.favorites?.includes(travelId);
+
+    if (isFavorite) {
+      // } zaten favorilerde var çıkar
+      user.favorites = user.favorites.filter(id=> id.toString() !== travelId);
+    } else {
+      // favorilere ekle
+      user.favorites.push(travelId);
+    }
+
+    await user.save();
+
+    return res.status(httpStatus.OK).json({
+      success: true,
+      message: isFavorite
+        ? "Travel story removed from favorites"
+        : "Travel story added to favorites",
+      data: {
+        travelId,
+        isFavorite: !isFavorite,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};

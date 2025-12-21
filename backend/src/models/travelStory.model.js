@@ -49,11 +49,6 @@ const travelStorySchema = new mongoose.Schema(
       enum: ["DRAFT", "PUBLISHED", "ARCHIVED"],
       default: "DRAFT",
     },
-    isFavorite: {
-      type: Boolean,
-      default: false,
-    },
-
     rating:{
       type:Number,
       minLength:1,
