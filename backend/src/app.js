@@ -9,6 +9,7 @@ import userRoute from "./routes/user.route.js";
 import travelStoryRoute from "./routes/travelStory.route.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
+import responseMiddleware from "./middlewares/response.middleware.js";
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(cors());
 app.use(cookieParser());
 
 connectionDB();
+
+app.use(responseMiddleware);
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoute);
@@ -32,7 +35,6 @@ const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-
 
 app.use(errorHandler);
 
