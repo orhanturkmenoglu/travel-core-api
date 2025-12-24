@@ -4,6 +4,7 @@ import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
 import Jwt from "jsonwebtoken";
 import cookie from "cookie";
+import { catchAsync } from "../utils/CatchAsync.js";
 const generateToken = (user) => {
   return Jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "8h",
@@ -57,69 +58,60 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-export const loginUser = async (req, res, next) => {
+export const loginUser = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   console.log("📥 Login Request:", req.body);
 
-  try {
-    // FIND USER
-    const user = await User.findOne({ email });
-    console.log("🔍 User:", user ? "FOUND" : "NOT FOUND");
+  // FIND USER
+  const user = await User.findOne({ email });
+  console.log("🔍 User:", user ? "FOUND" : "NOT FOUND");
 
-    if (!user) {
-      return next(new ApiError(404, "User not found"));
-    }
-
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-    // PASSWORD typeChecker
-    if (!isPasswordMatch) {
-      return next(new ApiError(401, "Invalid credentials"));
-    }
-
-    console.log("✅ Login successful:", user._id);
-
-    const token = generateToken(user);
-
-    return res
-      .status(httpStatus.OK)
-      .cookie("access_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // HTTPS
-        sameSite: "strict", // CSRF koruması
-        maxAge: 8 * 60 * 60 * 1000, // 8 saat
-      })
-      .json({
-        success: true,
-        message: "User login successfully",
-        data: {
-          id: user._id,
-          email: user.email,
-          username: user.username,
-        },
-        access_token: token,
-      });
-  } catch (err) {
-    console.log("❌ loginUser Error:", err);
-    next(err);
+  if (!user) {
+    return next(new ApiError(404, "User not found"));
   }
-};
 
-export const logoutUser = async (req, res, next) => {
-  try {
-    res
-      .clearCookie("access_token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "dev", // HTTPS
-        sameSite: "strict", // CSRF koruması
-      })
-      .status(httpStatus.OK)
-      .json({
-        success: true,
-        message: "User logged out successfully",
-      });
-  } catch (err) {
-    next(err);
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  // PASSWORD typeChecker
+  if (!isPasswordMatch) {
+    return next(new ApiError(401, "Invalid credentials"));
   }
-};
+
+  console.log("✅ Login successful:", user._id);
+
+  const token = generateToken(user);
+
+  return res
+    .status(httpStatus.OK)
+    .cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // HTTPS
+      sameSite: "strict", // CSRF koruması
+      maxAge: 8 * 60 * 60 * 1000, // 8 saat
+    })
+    .json({
+      success: true,
+      message: "User login successfully",
+      data: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+      },
+      access_token: token,
+    });
+});
+
+export const logoutUser = catchAsync(async (req, res, next) => {
+  res
+    .clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "dev", // HTTPS
+      sameSite: "strict", // CSRF koruması
+    })
+    .status(httpStatus.OK)
+    .json({
+      success: true,
+      message: "User logged out successfully",
+    });
+});

@@ -4,13 +4,13 @@ import TravelStory from "./../models/travelStory.model.js";
 import { uploadTravelStoryImage } from "../utils/cloudinary.js";
 import { text } from "express";
 import User from "../models/user.model.js";
+import { catchAsync } from "../utils/CatchAsync.js";
 
-export const createTravelStory = async (req, res, next) => {
+export const createTravelStory = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const { title, story, location, travelDate, imageUrl, tags, rating } =
     req.body;
 
-  try {
     // 🔹 travelDate parse
     // Kabul edilen format: YYYY-MM-DD (ÖNERİLEN)
     const parsedTravelDate = new Date(travelDate);
@@ -41,16 +41,14 @@ export const createTravelStory = async (req, res, next) => {
       message: "Travel story created successfully",
       travelStory,
     });
-  } catch (err) {
-    next(err);
-  }
-};
+  
+});
 
-export const getTravelStories = async (req, res, next) => {
+export const getTravelStories = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const { status, minRating, maxRating, page = 1, limit = 10 } = req.query;
-  try {
-    const query = {
+    
+  const query = {
       author: userId,
       status: status ? status.toUpperCase() : "PUBLISHED",
     };
@@ -108,14 +106,11 @@ export const getTravelStories = async (req, res, next) => {
       },
       data: travelStories,
     });
-  } catch (err) {
-    next(err);
-  }
-};
+  
+});
 
-export const getTravelStoriesBySearchTitle = async (req, res, next) => {
+export const getTravelStoriesBySearchTitle = catchAsync(async (req, res, next) => {
   const { title } = req.query;
-  try {
     // amaç gelen başlık parametresine göre seyahat hikayelerini aramak geriye eşleşenleri döndürmek
 
     if (!title) {
@@ -146,15 +141,12 @@ export const getTravelStoriesBySearchTitle = async (req, res, next) => {
       message: `Travel stories matching title "${title}" retrieved successfully`,
       data: travelStories,
     });
-  } catch (err) {
-    next(err);
-  }
-};
+  
+});
 
-export const archiveTravelStory = async (req, res, next) => {
+export const archiveTravelStory =catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;
-  try {
     if (!travelId) {
       return next(
         new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
@@ -187,12 +179,10 @@ export const archiveTravelStory = async (req, res, next) => {
         status: travelStory.status,
       },
     });
-  } catch (err) {
-    next(err);
-  }
-};
+  
+});
 
-export const deleteTravelStory = async (req, res, next) => {
+export const deleteTravelStory =catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;
 
@@ -201,7 +191,6 @@ export const deleteTravelStory = async (req, res, next) => {
     travelId,
   });
 
-  try {
     if (!travelId) {
       console.error("TRAVEL_ID_MISSING");
       return next(
@@ -229,22 +218,18 @@ export const deleteTravelStory = async (req, res, next) => {
       success: true,
       message: "Travel story deleted successfully",
     });
-  } catch (err) {
-    console.error("DELETE_TRAVEL_STORY_ERROR", err);
-    next(err);
-  }
-};
+ 
+});
 
 // favorilere ekleme çıkarma işlemi
 
 // kullanıcı story id sini gönderir favorilere eklenir veya çıkarılır daha önce eklenmişsse tekrar eklenmez çıkarılır
 // bizim elimizde boolean isFavorite var ona göre işlem yaparız
 
-export const getUserFavoriteTravelStories = async (req, res, next) => {
+export const getUserFavoriteTravelStories = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const { travelId } = req.params;
 
-  try {
     if (!travelId) {
       return next(
         new ApiError(httpStatus.BAD_REQUEST, "Travel id is required")
@@ -287,7 +272,4 @@ export const getUserFavoriteTravelStories = async (req, res, next) => {
         isFavorite: !isFavorite,
       },
     });
-  } catch (err) {
-    next(err);
-  }
-};
+});
