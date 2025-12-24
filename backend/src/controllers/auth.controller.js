@@ -5,15 +5,12 @@ import httpStatus from "http-status";
 import Jwt from "jsonwebtoken";
 import cookie from "cookie";
 import { catchAsync } from "../utils/CatchAsync.js";
-const generateToken = (user) => {
-  return Jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "8h",
-  });
-};
-const generateHashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-};
+
+import {
+  comparePassword,
+  generateHashPassword,
+  generateToken,
+} from "../utils/jwtUtils.js";
 
 export const registerUser = async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -71,7 +68,7 @@ export const loginUser = catchAsync(async (req, res, next) => {
     return next(new ApiError(404, "User not found"));
   }
 
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  const isPasswordMatch = await comparePassword(password, user.password);
 
   // PASSWORD typeChecker
   if (!isPasswordMatch) {
