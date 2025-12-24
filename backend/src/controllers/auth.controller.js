@@ -7,42 +7,26 @@ import {
   comparePassword,
   generateHashPassword,
   generateToken,
-} from "../utils/jwtUtils.js";
+} from "../utils/auth.utils.js";
 
-export const registerUser = catchAsync(async (req, res, next) => {
-  const { username, email, password } = req.body;
+import {userService} from "../services/index.js";
 
+
+export const registerUser = catchAsync(async (req, res) => {
   console.log("📥 Register Request Body:", req.body);
 
-  // CHECK EXISTING USER
-  const existsUser = await User.findOne({ email });
-  console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
-
-  if (existsUser) {
-    return next(new ApiError(409, "Email already exists"));
-  }
-
-  const hashedPassword = await generateHashPassword(password);
-
-  // CREATE USER
-  const newUser = await User.create({
-    username,
-    email,
-    password: hashedPassword,
-  });
-
-  console.log("✅ User Created:", newUser._id);
+  const user = await userService.createUser(req.body);
 
   return res.status(httpStatus.CREATED).json({
     success: true,
     message: "User registered successfully",
     data: {
-      username: newUser.username,
-      email: newUser.email,
-      role: newUser.role,
-      _id: newUser._id,
-      createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      _id: user._id,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     },
   });
 });
