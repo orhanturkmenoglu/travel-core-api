@@ -1,9 +1,6 @@
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
-import Jwt from "jsonwebtoken";
-import cookie from "cookie";
 import { catchAsync } from "../utils/CatchAsync.js";
 
 import {
@@ -12,48 +9,43 @@ import {
   generateToken,
 } from "../utils/jwtUtils.js";
 
-export const registerUser = async (req, res, next) => {
+export const registerUser = catchAsync(async (req, res, next) => {
   const { username, email, password } = req.body;
 
   console.log("📥 Register Request Body:", req.body);
 
-  try {
-    // CHECK EXISTING USER
-    const existsUser = await User.findOne({ email });
-    console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
+  // CHECK EXISTING USER
+  const existsUser = await User.findOne({ email });
+  console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
 
-    if (existsUser) {
-      return next(new ApiError(409, "Email already exists"));
-    }
-
-    const hashedPassword = await generateHashPassword(password);
-
-    // CREATE USER
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
-    console.log("✅ User Created:", newUser._id);
-
-    return res.status(httpStatus.CREATED).json({
-      success: true,
-      message: "User registered successfully",
-      data: {
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-        _id: newUser._id,
-        createdAt: newUser.createdAt,
-        updatedAt: newUser.updatedAt,
-      },
-    });
-  } catch (err) {
-    console.log("❌ registerUser Error:", err);
-    next(err);
+  if (existsUser) {
+    return next(new ApiError(409, "Email already exists"));
   }
-};
+
+  const hashedPassword = await generateHashPassword(password);
+
+  // CREATE USER
+  const newUser = await User.create({
+    username,
+    email,
+    password: hashedPassword,
+  });
+
+  console.log("✅ User Created:", newUser._id);
+
+  return res.status(httpStatus.CREATED).json({
+    success: true,
+    message: "User registered successfully",
+    data: {
+      username: newUser.username,
+      email: newUser.email,
+      role: newUser.role,
+      _id: newUser._id,
+      createdAt: newUser.createdAt,
+      updatedAt: newUser.updatedAt,
+    },
+  });
+});
 
 export const loginUser = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
