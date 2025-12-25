@@ -1,13 +1,19 @@
 import User from "../models/user.model.js";
+import ApiError from "../utils/ApiError.js";
 import { generateHashPassword } from "../utils/auth.utils.js";
 
 const createUser = async (userBody) => {
+  console.log("📥 Creating User with data:", userBody);
+  if(!userBody){
+    throw new ApiError(400, "User data is required");
+  }
+
   // CHECK EXISTING USER
   const existsUser = await User.findOne({ email: userBody.email });
   console.log("🔍 Existing User:", existsUser ? "FOUND" : "NOT FOUND");
 
   if (existsUser) {
-    return next(new ApiError(409, "Email already exists"));
+    return new ApiError(409, "Email already exists");
   }
 
   const hashedPassword = await generateHashPassword(userBody.password);

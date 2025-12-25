@@ -30,6 +30,11 @@ app.use("/test", async (req, res) => {
   return res.status(200).send("<h1>Hello Travel Core Api 🚀</h1>");
 });
 
+app.post("/debug", (req, res) => {
+  console.log("🧪 DEBUG BODY:", req.body);
+  return res.json(req.body);
+});
+
 const PORT = process.env.PORT || 3000;
 
 if (process.env.NODE_ENV === "development") {

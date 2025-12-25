@@ -17,7 +17,7 @@ export const registerUser = catchAsync(async (req, res) => {
 
   const user = await userService.createUser(req.body);
 
-  return res.status(httpStatus.CREATED).json({
+  return res.success(httpStatus.CREATED).json({
     success: true,
     message: "User registered successfully",
     data: {
